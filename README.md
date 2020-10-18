@@ -7,6 +7,11 @@ GCStreamer is an open source media streaming and processing library used in conj
 
 GCStreamer library can run on premises or in the clouds. 
 
+
+| ![GCStreamer architecture](./architecture-gcstreamer.png) | 
+|:--:| 
+| *Figure: GCStreamer architecture* |
+
 <table>
   <tr>
     <td><b>Homepage:</b></td>
