@@ -1,11 +1,11 @@
 GCStreamer - A Media Streaming to Google Cloud Storage and Google Cloud IoT Core
 ===================================
 
-GCStreamer is an open source media streaming and processing library used in conjunction with [Google Cloud Storage](https://cloud.google.com/storage/docs) to store video chunks and [Google Cloud IoT Core](https://cloud.google.com/iot/docs) to register device status.
+GCStreamer is an open source media streaming and processing application used in conjunction with [Google Cloud Storage](https://cloud.google.com/storage/docs) to store video chunks and [Google Cloud IoT Core](https://cloud.google.com/iot/docs) to register device status.
 
 [Google Cloud Storage](https://cloud.google.com/storage/docs) supports features like **Object Lifecycle Management**, whih allows to transition automatically to lower-cost storage classes when it meets specific criteria (for example, after 30 days).
 
-GCStreamer library can run on premises or in the clouds. 
+GCStreamer can run on premises or in the clouds. 
 
 
 | ![GCStreamer architecture](./architecture-gcstreamer.png) | 
@@ -24,9 +24,9 @@ GCStreamer library can run on premises or in the clouds.
 </table>
 
 
-GCStreamer ingestion pipeline is behaved as a streaming proxy, converting from live streaming procotols to chunk-based uploading. Additonally sends periodical status messages to Cloud IoT Core.
+GCStreamer ingestion pipeline is behaved as a streaming proxy, converting from live streaming procotols to chunk-based uploading. Additionally sends periodical status messages to Cloud IoT Core (connected/disconnected)
 
-To support live streaming protocols, we utilize [gStreamer](https://gstreamer.freedesktop.org) open-source multimedia framework. Do not confuse gStreamer with GCStreamer, we use both.
+To support live streaming protocols, we utilize [gStreamer](https://gstreamer.freedesktop.org) open-source multimedia framework. Do not confuse gStreamer with GCStreamer (this app), we use both.
 
 # Step 1: Create a named pipe
 
@@ -80,29 +80,14 @@ This [docker example](../env/Dockerfile) provides all dependencies configured. Y
 binary in $BIN_DIR directory of the docker image.
 
 Run the following command line on your host machine:
-```
+```bash
 $ export DOCKER_IMAGE=gcr.io/windy-site-254307/docker-gcstreamer:latest
 $ docker build -t $DOCKER_IMAGE -f env/Dockerfile .
-$ docker run -it $DOCKER_IMAGE /bin/bash
+$ docker run -it --network=host $DOCKER_IMAGE $PRIVATE_KEY $RTSP_URL $DEVICE_ID  # run streaming
 ```
 
-The last command returns a response similar to the following example.
-```
-root@e504724e76fc:/#
-```
+The `--network=host` argument is mandatory since Docker can change the source port of UDP packets for routing reasons, and this makes RTSP routing impossible. However, note this only works in Linux, not [Mac or Windows](https://stackoverflow.com/questions/54165483/docker-alternative-to-network-host-on-macos-and-windows).
 
-Open another terminal:
-```
-$ docker exec -it e504724e76fc /bin/bash
-```
-Now, you have both host terminals that are in the same Docker container.
-
-Some environment settings can be customized in the Docker image.
-```
-#set up environment for Google Video Intelligence Streaming API
-ENV SRC_DIR /googlesrc  #Source code directory
-ENV BIN_DIR /google     #Binary directory
-```
 
 # Docker deployment in GCP
 
@@ -113,16 +98,18 @@ $ gcloud docker --verbosity debug -- push $DOCKER_IMAGE
 
 Run the following commands in the terminal for your host machine:
 ```
-$ export KUBE_ID=any_string_you_like
-$ kubectl run -it $KUBE_ID --image=$DOCKER_IMAGE -- /bin/bash
+$ gcloud container clusters get-credentials gstreamer-cluster --zone=europe-west1-b
+$ kubectl run gstreamer-app --image $DOCKER_IMAGE  -- "PRIVATE" rtsp://192.168.1.50:5554 pixel4xl_camera
 ```
 This returns a response similar to the following:
 ```
-root@$KUBE_ID-215855480-c4sqp:/#
+Streaming now ...
 ```
-To open another terminal connecting to the same Kubernetes container on GCP, run the following command line on host machine:
-```
-$ kubectl exec -it $KUBE_ID-215855480-c4sqp -- /bin/bash
+
+To see the logs of the app, write the following:
+```bash
+kubectl get pods  # select the pod
+kubectl logs -f my-app-7ff975cf4b-s2g26 
 ```
 
 # Flow control

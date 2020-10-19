@@ -60,7 +60,6 @@ RUN apt-get update && apt-get install -y \
 
 RUN easy_install pip
 
-#RUN add-apt-repository ppa:jonathonf/ffmpeg-3 -y
 RUN apt-get update && apt-get install -y \
     libav-tools \
     libavdevice-dev \
@@ -87,8 +86,6 @@ RUN apt-get install -y \
     libgstreamer-plugins-base1.0-dev \
     && apt-get clean
 
-ENV CPLUS_INCLUDE_PATH=/usr
-ENV LD_LIBRARY_PATH=/usr
 
 #install Google Cloud Storage and IoT Core Python Libraries
 RUN pip install --upgrade google-cloud-storage
@@ -102,7 +99,7 @@ ENV BIN_DIR /google
 
 #copy gcstreamer directory to Docker
 RUN mkdir -p $SRC_DIR
-COPY *.md *.py roots.pem rsa_private.pem LICENSE *.json $SRC_DIR/
+COPY *.md *.py roots.pem rsa_private.pem LICENSE *.json launcher.sh $SRC_DIR/
 COPY client $SRC_DIR/client
 COPY env $SRC_DIR/env
 
@@ -121,4 +118,9 @@ RUN cd $SRC_DIR
 #set work directory
 WORKDIR $BIN_DIR
 
-CMD ["/bin/bash"]
+RUN cp $SRC_DIR/launcher.sh /
+RUN chmod 755 /launcher.sh
+
+ENTRYPOINT ["/bin/bash", "/launcher.sh"]
+
+#CMD ["/bin/bash"]
