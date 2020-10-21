@@ -1,0 +1,6 @@
+{
+	"cloud_project_id": "windy-site-254307",
+	"video_bucket": "gcstreamer-videos",
+	"video_json_bucket": "gcstreamer-video-json",
+	"thumbnail_bucket": "gcstreamer-video-thumbnails"
+}

@@ -13,7 +13,7 @@ from google.cloud import storage
 PROJECT_ID="windy-site-254307"
 CLOUD_REGION="europe-west1"
 IOT_REGISTRY="camera_registry"
-DESTINATION_BUCKET = "gcstreamer"
+DESTINATION_BUCKET = "gcstreamer-videos"
 CHUNK_SIZE = 5242880 # Set the chunk size to 5MB, or 5 * 1024 * 1024 (recommended less than 10MB).
 
 def streaming_gcs_iot(stream_file, camera_id, iot_client):
@@ -45,7 +45,7 @@ def streaming_gcs_iot(stream_file, camera_id, iot_client):
             # Send chunk to GCS
             dateTimeObj = datetime.datetime.now()
             timestampStr = dateTimeObj.strftime("%d%b%Y#%H:%M:%S.%f")
-            destination_blob_name = camera_id + "/" + timestampStr + "_" + camera_id + "_" + str(chunk_number)
+            destination_blob_name = camera_id + "/" + timestampStr + "_" + camera_id + "_" + str(chunk_number) + ".mp4"
             
             blob = bucket.blob(destination_blob_name)
             blob.upload_from_file(io.BytesIO(data))
@@ -80,7 +80,7 @@ if __name__ == '__main__':
     # Get IoT Core client
     iotcore_client = get_iot_client(
         PROJECT_ID, CLOUD_REGION, IOT_REGISTRY,
-        args.camera_id, "../rsa_private.pem", "RS256",
+        args.camera_id, "../rsa_private_pxel4xl.pem", "RS256",
         "../roots.pem", "mqtt.googleapis.com", 8883)
 
     # Send to GCS as well as IoT updates

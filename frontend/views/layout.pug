@@ -1,0 +1,26 @@
+doctype html
+html
+  head
+    title="Video Intelligence Demo"
+
+    // META INFO
+    meta(name='viewport' content='width=device-width, initial-scale=1.0')
+
+    // STYLESHEETS
+    link(rel='stylesheet', href='https://fonts.googleapis.com/icon?family=Material+Icons')
+    link(rel='stylesheet', href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700', type='text/css')
+    link(rel="stylesheet" href="https://fonts.googleapis.com/css?family=Muli")
+    link(rel="stylesheet" href="https://necolas.github.io/normalize.css/latest/normalize.css")
+    link(rel="stylesheet" href="/stylesheets/site.css")
+    link(rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/balloon-css/0.5.0/balloon.min.css")
+
+    // JAVASCRIPT
+    script(src="/javascripts/compiled.js")
+
+  body.l-pad-top-7
+    // TOP NAV
+    include includes/cabecera.pug
+
+    // CONTENT
+    #stage
+      block content

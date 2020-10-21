@@ -66,22 +66,45 @@ We use gStreamer pipeline to convert from these live streaming protocols to a de
 the named pipe we create in Step 1.
 
 Here, we only provide examples RTSP. If you need other protocol support, please contact us.
-```
+```bash
 $ export PIPE_NAME=/path_to_pipe/pipe_name
 $ export RTSP_SOURCE=rtsp://ip_addr:port/stream
-$ gst-launch-1.0 -v rtspsrc location=$RTSP_SOURCE ! rtpjitterbuffer ! rtph264depay \
-      ! h264parse ! mp4mux ! filesink location=$PIPE_NAME
+$ gst-launch-1.0 -v rtspsrc location=$RTSP_SOURCE ! rtpjitterbuffer ! rtph264depay ! h264parse ! flvmux ! filesink location=$PIPE_NAME
+# gst-launch-1.0 -v rtspsrc location=$RTSP_SOURCE ! rtpjitterbuffer ! rtph264depay \
+#      ! h264parse ! mp4mux ! filesink location=$PIPE_NAME
 ```
 
+# Create new camera in Cloud IoT Core
+
+These commands create a public/private key pair:
+```bash
+openssl genpkey -algorithm RSA -out rsa_private.pem -pkeyopt rsa_keygen_bits:2048
+openssl rsa -in rsa_private.pem -pubout -out rsa_public.pem
+```
+
+You will use the private key to call the docker, and the public key to create the device in the console.
+To create the device with the previous public key `rsa_public.pem` (you can optionally set an expiration date)
+```bash
+export DEVICE_ID=<MY_DEVICE_ID>
+gcloud iot devices create DEVICE_ID \
+  --project=PROJECT_ID \
+  --region=REGION \
+  --registry=REGISTRY_ID \
+  --public-key path=rsa_public.pem,type=rsa-x509-pem
+```
+
+# Create docker
+Docker must be created beforehand with the private key
 
 # Docker deployment Local
 
-This [docker example](../env/Dockerfile) provides all dependencies configured. You can find the python files
+This [docker example](https://github.com/rafaelsf80/gcstreamer/blob/main/env/Dockerfile) provides all dependencies configured. You can find the python files
 binary in $BIN_DIR directory of the docker image.
 
 Run the following command line on your host machine:
 ```bash
-$ export DOCKER_IMAGE=gcr.io/windy-site-254307/docker-gcstreamer:latest
+PRIVATE_KEY="$(cat ~/.rsa_private.pem)"
+$ export DOCKER_IMAGE=gcr.io/<YOUR_PROJECT_ID>/docker-gcstreamer:latest
 $ docker build -t $DOCKER_IMAGE -f env/Dockerfile .
 $ docker run -it --network=host $DOCKER_IMAGE $PRIVATE_KEY $RTSP_URL $DEVICE_ID  # run streaming
 ```

@@ -58,6 +58,11 @@ RUN apt-get update && apt-get install -y \
     zlib1g-dev \
     && apt-get clean
 
+#RUN apt-get install -y \
+#    python-dev \
+#    python-setuptools \
+#    wget
+
 RUN easy_install pip
 
 RUN apt-get update && apt-get install -y \
@@ -99,7 +104,7 @@ ENV BIN_DIR /google
 
 #copy gcstreamer directory to Docker
 RUN mkdir -p $SRC_DIR
-COPY *.md *.py roots.pem rsa_private.pem LICENSE *.json launcher.sh $SRC_DIR/
+COPY *.md *.py roots.pem LICENSE *.json launcher.sh $SRC_DIR/
 COPY client $SRC_DIR/client
 COPY env $SRC_DIR/env
 
@@ -107,7 +112,6 @@ COPY env $SRC_DIR/env
 RUN mkdir -p $BIN_DIR
 RUN mkdir -p $BIN_DIR/python
 RUN cp $SRC_DIR/client/*.py $BIN_DIR/python
-RUN cp $SRC_DIR/rsa_private.pem $BIN_DIR
 RUN cp $SRC_DIR/roots.pem $BIN_DIR
 RUN cp $SRC_DIR/*.json $BIN_DIR
 RUN chmod +x $BIN_DIR/python/*.py
