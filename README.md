@@ -103,7 +103,7 @@ binary in $BIN_DIR directory of the docker image.
 
 Run the following command line on your host machine:
 ```bash
-PRIVATE_KEY="$(cat ~/.rsa_private.pem)"
+$ export PRIVATE_KEY="$(cat ~/.rsa_private.pem)"
 $ export DOCKER_IMAGE=gcr.io/<YOUR_PROJECT_ID>/docker-gcstreamer:latest
 $ docker build -t $DOCKER_IMAGE -f env/Dockerfile .
 $ docker run -it --network=host $DOCKER_IMAGE $PRIVATE_KEY $RTSP_URL $DEVICE_ID  # run streaming
@@ -120,9 +120,9 @@ $ gcloud docker --verbosity debug -- push $DOCKER_IMAGE
 ```
 
 Run the following commands in the terminal for your host machine:
-```
+```bash
 $ gcloud container clusters get-credentials gstreamer-cluster --zone=europe-west1-b
-$ kubectl run gstreamer-app --image $DOCKER_IMAGE  -- "PRIVATE" rtsp://192.168.1.50:5554 pixel4xl_camera
+$ kubectl run gstreamer-app --image $DOCKER_IMAGE  -- $PRIVATE_KEY $RTSP_URL $DEVICE_ID
 ```
 This returns a response similar to the following:
 ```
@@ -134,6 +134,15 @@ To see the logs of the app, write the following:
 kubectl get pods  # select the pod
 kubectl logs -f my-app-7ff975cf4b-s2g26 
 ```
+
+# Dashboard
+
+You can view the videos uploaded with the nodejs DaHsboard. The following two commands will crete the Docker, store it in Google Container Registry and create the Cloud Run service:
+```bash
+gcloud builds submit --tag gcr.io/<YOUR_PROJECT_ID>/videos-frontend
+gcloud run deploy videos-frontend --image gcr.io/<YOUR_PROJECT_ID>/videos-frontend --allow-unauthenticated --region=europe-west1 --platform=managed
+```
+
 
 # Flow control
 
