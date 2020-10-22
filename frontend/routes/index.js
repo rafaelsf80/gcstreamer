@@ -11,7 +11,7 @@ let fileArray = [];
 router.get('/', function(req, res, next) {
 
   const storageBucket = storageClient.bucket(config.video_bucket);
-  console.log("hola , ", config.video_bucket)
+  console.log("Getting files from ", config.video_bucket)
   storageBucket.getFiles(function(err, files) {
     if (!err) {
       files.forEach(function(file) {
