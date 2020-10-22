@@ -80,7 +80,7 @@ if __name__ == '__main__':
     # Get IoT Core client
     iotcore_client = get_iot_client(
         PROJECT_ID, CLOUD_REGION, IOT_REGISTRY,
-        args.camera_id, "../rsa_private_pxel4xl.pem", "RS256",
+        args.camera_id, "../private.key", "RS256",
         "../roots.pem", "mqtt.googleapis.com", 8883)
 
     # Send to GCS as well as IoT updates

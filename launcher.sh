@@ -1,4 +1,5 @@
 #!bin/bash
+# Parameters $DOCKER_IMAGE $PRIVATE_KEY_EXTERNAL $RTSP_URL $DEVICE_ID $CASE_GSTREAMER
 echo "launcher.sh parameters = ${*}"
 
 ######### Step 1
@@ -9,8 +10,8 @@ echo "Done setting pipe ..."
 
 ######### Step 2
 echo "Saving private key of device"
-echo "$1" > /private.key  # save private key to file (for gcstreamer.py)
-echo "Launching GCStreamer with camera_id" $3
+echo "$1" > ./private.key  # save private key to file (for gcstreamer.py)
+echo "Launching GCStreamer with device_id:" $3
 export GOOGLE_APPLICATION_CREDENTIALS=$BIN_DIR/windy-site-254307-e41b7141a3d0.json
 export TIMEOUT=3600
 

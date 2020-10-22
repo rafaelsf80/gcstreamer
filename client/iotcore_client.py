@@ -20,6 +20,7 @@ def get_iot_client(
 
     # With Google Cloud IoT Core, the username field is ignored, and the
     # password field is used to transmit a JWT to authorize the device.
+    console.log("private key" + private_key_file)
     client.username_pw_set(
             username='unused',
             password=create_jwt(

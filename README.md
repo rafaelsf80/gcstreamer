@@ -21,6 +21,10 @@ GCStreamer can run on premises or in the clouds.
     <td><b>Homepage:</b></td>
     <td><a href="https://cloud.google.com/iot/docs/">Google Cloud IoT Core</a></td>
   </tr>
+    <tr>
+    <td><b>Homepage:</b></td>
+    <td><a href="https://gstreamer.freedesktop.org/">gStreamer</a></td>
+  </tr>
 </table>
 
 
@@ -28,53 +32,10 @@ GCStreamer ingestion pipeline is behaved as a streaming proxy, converting from l
 
 To support live streaming protocols, we utilize [gStreamer](https://gstreamer.freedesktop.org) open-source multimedia framework. Do not confuse gStreamer with GCStreamer (this app), we use both.
 
-# Step 1: Create a named pipe
-
-A named pipe is created to communicate between gStreamer and GCStreamer ingestion proxy. The two processes are running
-inside the same Docker image.
-
-```
-$ export PIPE_NAME=/path_to_pipe/pipe_name
-$ mkfifo $PIPE_NAME
-```
-
-# Step 2: Run GCStreamer ingestion proxy
-
-Command line to run our example python code:
-
-```
-$ export GOOGLE_APPLICATION_CREDENTIALS=/path_to_credential/credential_json
-$ export PIPE_NAME=/path_to_pipe/pipe_name
-$ export TIMEOUT=3600
-$ ./gcstreamer.py --video_path=$PIPE_NAME 
-```
-
-Here, $GOOGLE_APPLICATION_CREDENTIALS specifies where GCP credential json file is located.
-
-# Step 3: Run gStreamer pipeline
-
-gStreamer supports multiple live streaming protocols including but not limited to:
-
-* HTTP Live Streaming (HLS)
-* Real-time Streaming Protocol (RTSP)
-* Real-time Protocol (RTP)
-* Real-time Messaging Protocol (RTMP)
-* WebRTC
-* Streaming from Webcam
-
-We use gStreamer pipeline to convert from these live streaming protocols to a decodable video stream, and writes the stream into
-the named pipe we create in Step 1.
-
-Here, we only provide examples RTSP. If you need other protocol support, please contact us.
-```bash
-$ export PIPE_NAME=/path_to_pipe/pipe_name
-$ export RTSP_SOURCE=rtsp://ip_addr:port/stream
-$ gst-launch-1.0 -v rtspsrc location=$RTSP_SOURCE ! rtpjitterbuffer ! rtph264depay ! h264parse ! flvmux ! filesink location=$PIPE_NAME
-# gst-launch-1.0 -v rtspsrc location=$RTSP_SOURCE ! rtpjitterbuffer ! rtph264depay \
-#      ! h264parse ! mp4mux ! filesink location=$PIPE_NAME
-```
 
 # Create new camera in Cloud IoT Core
+
+You must have a Gloud IoT registry already created. Let's create a device (camera)
 
 These commands create a public/private key pair:
 ```bash
@@ -93,40 +54,89 @@ gcloud iot devices create DEVICE_ID \
   --public-key path=rsa_public.pem,type=rsa-x509-pem
 ```
 
-# Create docker
-Docker must be created beforehand with the private key
+# Create a GCS bucket for your videos
+
+You must create a GCS bucket for your videos and mofidy [this line](https://github.com/rafaelsf80/gcstreamer/blob/main/client/gcstreamer.py#L16)
+
+# Local execution (no Docker)
+
+## Step 1: Create a named pipe
+
+A named pipe is created to communicate between gStreamer and GCStreamer ingestion proxy. The two processes are running
+inside the same Docker image.
+
+```
+export PIPE_NAME=/path_to_pipe/pipe_name
+mkfifo $PIPE_NAME
+```
+
+## Step 2: Run GCStreamer ingestion proxy
+
+Command line to run our example python code:
+
+```bash
+export GOOGLE_APPLICATION_CREDENTIALS=/path_to_credential/credential_json
+export PIPE_NAME=/path_to_pipe/pipe_name
+export TIMEOUT=3600 # future use
+./gcstreamer.py --video_path=$PIPE_NAME 
+```
+
+Here, $GOOGLE_APPLICATION_CREDENTIALS specifies where GCP credential json file is located.
+
+## Step 3: Run gStreamer pipeline
+
+gStreamer supports multiple live streaming protocols including but not limited to:
+
+* HTTP Live Streaming (HLS)
+* Real-time Streaming Protocol (RTSP)
+* Real-time Protocol (RTP)
+* Real-time Messaging Protocol (RTMP)
+* WebRTC
+* Streaming from Webcam
+
+We use gStreamer pipeline to convert from these live streaming protocols to a decodable video stream, and writes the stream into
+the named pipe we create in Step 1.
+
+Here, we only provide examples RTSP. If you need other protocol support, please contact us.
+```bash
+export PIPE_NAME=/path_to_pipe/pipe_name
+export RTSP_SOURCE=rtsp://ip_addr:port/stream
+gst-launch-1.0 -v rtspsrc location=$RTSP_SOURCE ! rtpjitterbuffer ! rtph264depay ! h264parse ! flvmux ! filesink location=$PIPE_NAME
+# gst-launch-1.0 -v rtspsrc location=$RTSP_SOURCE ! rtpjitterbuffer ! rtph264depay \
+#      ! h264parse ! mp4mux ! filesink location=$PIPE_NAME
+```
+
 
 # Docker deployment Local
 
-This [docker example](https://github.com/rafaelsf80/gcstreamer/blob/main/env/Dockerfile) provides all dependencies configured. You can find the python files
-binary in $BIN_DIR directory of the docker image.
+This [docker example](https://github.com/rafaelsf80/gcstreamer/blob/main/env/Dockerfile) provides all dependencies configured. You can find the python files binary in $BIN_DIR directory of the docker image.
 
 Run the following command line on your host machine:
 ```bash
-$ export PRIVATE_KEY="$(cat ~/.rsa_private.pem)"
-$ export DOCKER_IMAGE=gcr.io/<YOUR_PROJECT_ID>/docker-gcstreamer:latest
-$ docker build -t $DOCKER_IMAGE -f env/Dockerfile .
-$ docker run -it --network=host $DOCKER_IMAGE $PRIVATE_KEY $RTSP_URL $DEVICE_ID  # run streaming
+export DOCKER_IMAGE=gcr.io/<YOUR_PROJECT_ID>/docker-gcstreamer:latest
+export PRIVATE_KEY="$(cat ~/.rsa_private.pem)"
+export RTSP_URL="rtsp://freja.hiof.no:1935/rtplive/definst/hessdalen03.stream" # PUBLIC URL
+export DEVICE_ID=<YOUR_DEVICE_ID> # same as IoT core
+export CASE_GSTREAMER="FLVMUX"
+docker build -t $DOCKER_IMAGE -f env/Dockerfile .
+docker run -it --network=host $DOCKER_IMAGE $PRIVATE_KEY $RTSP_URL $DEVICE_ID $CASE_GSTREAMER  # run app
 ```
 
-The `--network=host` argument is mandatory since Docker can change the source port of UDP packets for routing reasons, and this makes RTSP routing impossible. However, note this only works in Linux, not [Mac or Windows](https://stackoverflow.com/questions/54165483/docker-alternative-to-network-host-on-macos-and-windows).
+The `--network=host` argument is mandatory since Docker can change the source port of UDP packets for routing reasons, and this makes RTSP routing impossible. However, **note this only works in Linux**, not [Mac or Windows](https://stackoverflow.com/questions/54165483/docker-alternative-to-network-host-on-macos-and-windows).
 
 
-# Docker deployment in GCP
+# Docker deployment in Google Gloud Platform (GKE)
 
 Push Docker image to GCP container registry:
-```
-$ gcloud docker --verbosity debug -- push $DOCKER_IMAGE
+```bash
+gcloud auth configure-docker
+docker push $DOCKER_IMAGE
 ```
 
-Run the following commands in the terminal for your host machine:
+Run the following commands in the terminal for your host machine (make sure you have created GKE cluster created beforehand)
 ```bash
-$ gcloud container clusters get-credentials gstreamer-cluster --zone=europe-west1-b
-$ kubectl run gstreamer-app --image $DOCKER_IMAGE  -- $PRIVATE_KEY $RTSP_URL $DEVICE_ID
-```
-This returns a response similar to the following:
-```
-Streaming now ...
+$ gcloud container clusters get-credentials <YOUR_CLUSTER_NAME> --zone=europe-west1-b
+$ kubectl run gstreamer-app --image $DOCKER_IMAGE  -- $PRIVATE_KEY $RTSP_URL $DEVICE_ID $CASE_GSTREAMER
 ```
 
 To see the logs of the app, write the following:
@@ -137,7 +147,7 @@ kubectl logs -f my-app-7ff975cf4b-s2g26
 
 # Dashboard
 
-You can view the videos uploaded with the nodejs DaHsboard. The following two commands will crete the Docker, store it in Google Container Registry and create the Cloud Run service:
+You can view the videos uploaded with the nodejs dashboard. The following two commands will create the Docker, store it in Google Container Registry and create the Cloud Run service:
 ```bash
 gcloud builds submit --tag gcr.io/<YOUR_PROJECT_ID>/videos-frontend
 gcloud run deploy videos-frontend --image gcr.io/<YOUR_PROJECT_ID>/videos-frontend --allow-unauthenticated --region=europe-west1 --platform=managed
