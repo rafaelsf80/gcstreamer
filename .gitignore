@@ -1,0 +1,10 @@
+windy-site-254307-e41b7141a3d0.json
+rsa_private*
+rsa_public*
+__pycache__
+client/__pycache__
+frontend-old/
+frontend/node_modules/
+frontend/keyfile.json
+frontend/commands-cloudrun.sh
+

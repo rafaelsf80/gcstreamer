@@ -117,9 +117,9 @@ export DOCKER_IMAGE=gcr.io/<YOUR_PROJECT_ID>/docker-gcstreamer:latest
 export PRIVATE_KEY="$(cat ~/.rsa_private.pem)"
 export RTSP_URL="rtsp://freja.hiof.no:1935/rtplive/definst/hessdalen03.stream" # PUBLIC URL
 export DEVICE_ID=<YOUR_DEVICE_ID> # same as IoT core
-export CASE_GSTREAMER="FLVMUX"
+export CAMERA_TYPE="STANDARD"
 docker build -t $DOCKER_IMAGE -f env/Dockerfile .
-docker run -it --network=host $DOCKER_IMAGE $PRIVATE_KEY $RTSP_URL $DEVICE_ID $CASE_GSTREAMER  # run app
+docker run -it --network=host $DOCKER_IMAGE $PRIVATE_KEY $RTSP_URL $DEVICE_ID $CAMERA_TYPE  # run app
 ```
 
 The `--network=host` argument is mandatory since Docker can change the source port of UDP packets for routing reasons, and this makes RTSP routing impossible. However, **note this only works in Linux**, not [Mac or Windows](https://stackoverflow.com/questions/54165483/docker-alternative-to-network-host-on-macos-and-windows).
@@ -136,13 +136,13 @@ docker push $DOCKER_IMAGE
 Run the following commands in the terminal for your host machine (make sure you have created GKE cluster created beforehand)
 ```bash
 $ gcloud container clusters get-credentials <YOUR_CLUSTER_NAME> --zone=europe-west1-b
-$ kubectl run gstreamer-app --image $DOCKER_IMAGE  -- $PRIVATE_KEY $RTSP_URL $DEVICE_ID $CASE_GSTREAMER
+$ kubectl run camera-standard-type --image $DOCKER_IMAGE  -- $PRIVATE_KEY $RTSP_URL $DEVICE_ID $CAMERA_TYPE
 ```
 
 To see the logs of the app, write the following:
 ```bash
 kubectl get pods  # select the pod
-kubectl logs -f my-app-7ff975cf4b-s2g26 
+kubectl logs -f camera-standard-type-7ff975cf4b-s2g26 
 ```
 
 # Dashboard

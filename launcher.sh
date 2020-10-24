@@ -22,15 +22,15 @@ sleep 2
 ######### Step 3
 echo "Launching gStreamer with" $2 $4
 export RTSP_SOURCE=$2
-export CASE=$4
+export CAMERA_TYPE=$4
 # External camera stream
-if [ "$CASE" == 'FLVMUX' ];
+if [ "$CAMERA_TYPE" == 'STANDARD' ];
 then
       gst-launch-1.0 -v rtspsrc location=$RTSP_SOURCE ! rtpjitterbuffer ! rtph264depay \
             ! h264parse ! flvmux ! filesink location=$PIPE_NAME
 fi
 # Android
-if [ "$CASE" == 'MP4MUX' ];
+if [ "$CAMERA_TYPE" == 'MP4MUX' ];
 then
       gst-launch-1.0 -v rtspsrc location=$RTSP_SOURCE ! rtpjitterbuffer ! rtph264depay \
             ! h264parse ! mp4mux ! filesink location=$PIPE_NAME

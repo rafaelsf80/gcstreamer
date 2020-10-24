@@ -1,6 +1,5 @@
 # To build a new docker image, please run:
 # docker build -t streaming-api:v1.0 -f env/Dockerfile .
-
 FROM ubuntu:xenial
 
 LABEL description="GCS Streaming build environment."
@@ -102,9 +101,10 @@ RUN pip install --user paho-mqtt
 ENV SRC_DIR /googlesrc
 ENV BIN_DIR /google
 
-#copy gcstreamer directory to Docker
+#copy gcstreamer directory to Docker (download roots.pem)
 RUN mkdir -p $SRC_DIR
-COPY *.md *.py roots.pem LICENSE *.json launcher.sh $SRC_DIR/
+RUN wget https://pki.google.com/roots.pem 
+COPY *.md *.py LICENSE *.json launcher.sh $SRC_DIR/
 COPY client $SRC_DIR/client
 COPY env $SRC_DIR/env
 
@@ -112,7 +112,7 @@ COPY env $SRC_DIR/env
 RUN mkdir -p $BIN_DIR
 RUN mkdir -p $BIN_DIR/python
 RUN cp $SRC_DIR/client/*.py $BIN_DIR/python
-RUN cp $SRC_DIR/roots.pem $BIN_DIR
+RUN cp roots.pem $BIN_DIR
 RUN cp $SRC_DIR/*.json $BIN_DIR
 RUN chmod +x $BIN_DIR/python/*.py
 
