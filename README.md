@@ -54,13 +54,13 @@ gcloud iot devices create DEVICE_ID \
   --public-key path=rsa_public.pem,type=rsa-x509-pem
 ```
 
-# Create a GCS bucket for your videos
+# Create resources
 
-You must create a GCS bucket for your videos and modify [this line](https://github.com/rafaelsf80/gcstreamer/blob/main/client/gcstreamer.py#L16)
+You must create a GCS bucket, IoT registry for your videos and modify [these lines](https://github.com/rafaelsf80/gcstreamer/blob/main/client/gcstreamer.py#L15-L16)
 
-# Service account
+# Create service account
 
-You must create a service account with the proper permissions and modify [this line](https://github.com/rafaelsf80/gcstreamer/blob/main/launcher.sh#L15)
+You must create a service account with the proper permissions, store it locally and modify [this line](https://github.com/rafaelsf80/gcstreamer/blob/main/launcher.sh#L15)
 
 
 # Local execution (no Docker)
