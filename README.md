@@ -56,7 +56,12 @@ gcloud iot devices create DEVICE_ID \
 
 # Create a GCS bucket for your videos
 
-You must create a GCS bucket for your videos and mofidy [this line](https://github.com/rafaelsf80/gcstreamer/blob/main/client/gcstreamer.py#L16)
+You must create a GCS bucket for your videos and modify [this line](https://github.com/rafaelsf80/gcstreamer/blob/main/client/gcstreamer.py#L16)
+
+# Service account
+
+You must create a service account with the proper permissions and modify [this line](https://github.com/rafaelsf80/gcstreamer/blob/main/launcher.sh#L15)
+
 
 # Local execution (no Docker)
 
@@ -81,7 +86,7 @@ export TIMEOUT=3600 # future use
 ./gcstreamer.py --video_path=$PIPE_NAME 
 ```
 
-Here, $GOOGLE_APPLICATION_CREDENTIALS specifies where GCP credential json file is located.
+Here, `$GOOGLE_APPLICATION_CREDENTIALS` specifies where GCP credential json file is located.
 
 ## Step 3: Run gStreamer pipeline
 
@@ -106,7 +111,7 @@ gst-launch-1.0 -v rtspsrc location=$RTSP_SOURCE ! rtpjitterbuffer ! rtph264depay
 #      ! h264parse ! mp4mux ! filesink location=$PIPE_NAME
 ```
 
-
+#
 # Docker deployment Local
 
 This [docker example](https://github.com/rafaelsf80/gcstreamer/blob/main/env/Dockerfile) provides all dependencies configured. You can find the python files binary in $BIN_DIR directory of the docker image.
@@ -133,7 +138,7 @@ gcloud auth configure-docker
 docker push $DOCKER_IMAGE # push to Google Container Registry
 ```
 
-Run the following commands in your host machine (make sure you have a GKE cluster beforehand)
+Run the following commands in your host machine (make sure you have a GKE cluster created beforehand)
 ```bash
 gcloud container clusters get-credentials <YOUR_GKE_CLUSTER_NAME> --zone=europe-west1-b
 kubectl run camera-standard-type --image $DOCKER_IMAGE  -- $PRIVATE_KEY $RTSP_URL $DEVICE_ID $CAMERA_TYPE
@@ -147,7 +152,7 @@ kubectl logs -f camera-standard-type-7ff975cf4b-s2g26 # get logs
 
 # Dashboard
 
-You can view the videos uploaded with the nodejs dashboard. The following two commands will create the Docker, store it in Google Container Registry and create the Cloud Run service:
+You can view the videos uploaded with a dashboard written with the nodejs framework. The following two commands will create the Docker for the dashboard, store it in Google Container Registry and create the Cloud Run service:
 ```bash
 gcloud builds submit --tag gcr.io/<YOUR_PROJECT_ID>/videos-frontend
 gcloud run deploy videos-frontend --image gcr.io/<YOUR_PROJECT_ID>/videos-frontend --allow-unauthenticated --region=europe-west1 --platform=managed
@@ -166,10 +171,12 @@ Google Cloud Storage does not provide flow control. It should be required to cre
 GCStreamer ingestion  includes the following two directories:
 
 * [client](client): Python client libraries for connecting to Cloud Storage and IoT Core.
-* [env](env): Docker example for GCStreamer ingestion.
+* [env](env): Docker for GCStreamer ingestion.
+* [dashboard](frontend): Docker for the Dashboard
+
 
 # Third-party dependency
 
-The open source GCStreamer ingestion library is based on the following third-party open source libraries:
+The open source GCStreamer ingestion app is based on the following third-party open source libraries:
 
 * [gStreamer](https://gstreamer.freedesktop.org): cross-platform multimedia processing and streaming framework.
