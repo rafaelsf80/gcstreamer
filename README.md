@@ -127,22 +127,22 @@ The `--network=host` argument is mandatory since Docker can change the source po
 
 # Docker deployment in Google Gloud Platform (GKE)
 
-Push Docker image to GCP container registry:
+Push the previous Docker image to GCP container registry:
 ```bash
 gcloud auth configure-docker
-docker push $DOCKER_IMAGE
+docker push $DOCKER_IMAGE # push to Google Container Registry
 ```
 
-Run the following commands in the terminal for your host machine (make sure you have created GKE cluster created beforehand)
+Run the following commands in your host machine (make sure you have a GKE cluster beforehand)
 ```bash
-$ gcloud container clusters get-credentials <YOUR_CLUSTER_NAME> --zone=europe-west1-b
-$ kubectl run camera-standard-type --image $DOCKER_IMAGE  -- $PRIVATE_KEY $RTSP_URL $DEVICE_ID $CAMERA_TYPE
+gcloud container clusters get-credentials <YOUR_GKE_CLUSTER_NAME> --zone=europe-west1-b
+kubectl run camera-standard-type --image $DOCKER_IMAGE  -- $PRIVATE_KEY $RTSP_URL $DEVICE_ID $CAMERA_TYPE
 ```
 
 To see the logs of the app, write the following:
 ```bash
 kubectl get pods  # select the pod
-kubectl logs -f camera-standard-type-7ff975cf4b-s2g26 
+kubectl logs -f camera-standard-type-7ff975cf4b-s2g26 # get logs
 ```
 
 # Dashboard
