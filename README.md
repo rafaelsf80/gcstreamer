@@ -111,7 +111,7 @@ gst-launch-1.0 -v rtspsrc location=$RTSP_SOURCE ! rtpjitterbuffer ! rtph264depay
 #      ! h264parse ! mp4mux ! filesink location=$PIPE_NAME
 ```
 
-#
+
 # Docker deployment Local
 
 This [docker example](https://github.com/rafaelsf80/gcstreamer/blob/main/env/Dockerfile) provides all dependencies configured. You can find the python files binary in $BIN_DIR directory of the docker image.
